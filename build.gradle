@@ -1,0 +1,124 @@
+plugins {
+	id "java"
+	id "jacoco"
+	id "org.springframework.boot" version "${springBootVersion}"
+	id "io.spring.dependency-management" version "${springDependencyManagementVersion}"
+    id "org.openapi.generator" version "${openapiVersion}"
+	id "io.swagger.core.v3.swagger-gradle-plugin" version "${swaggerVersion}"
+}
+
+group = "com.pnc.assessment"
+version = "0.0.1-SNAPSHOT"
+
+java {
+	sourceCompatibility = "17"
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+	implementation "org.springframework.boot:spring-boot-starter-webflux:${springBootVersion}"
+	implementation "org.springframework.boot:spring-boot-starter-validation:${springBootVersion}"
+	testImplementation "org.springframework.boot:spring-boot-starter-test:${springBootVersion}"
+
+	implementation "io.swagger.core.v3:swagger-annotations:${swaggerVersion}"
+	implementation "io.swagger.core.v3:swagger-models:${swaggerVersion}"
+
+	implementation "javax.annotation:javax.annotation-api:1.3.2"
+	implementation "jakarta.validation:jakarta.validation-api:3.0.2"
+	implementation "org.openapitools:jackson-databind-nullable:0.2.6"
+
+	compileOnly "org.apache.tomcat:tomcat-servlet-api:9.0.37"
+
+	implementation "org.projectlombok:lombok"
+	annotationProcessor "org.projectlombok:lombok"
+}
+
+openApiGenerate {
+    generatorName = "spring"
+    inputSpec = "$rootDir/src/main/resources/api-contract.yaml".toString()
+    outputDir = "$buildDir/generated".toString()
+    invokerPackage = "com.pnc.assessment.geolocapi"
+    apiPackage = "com.pnc.assessment.geolocapi.controller"
+    modelPackage = "com.pnc.assessment.geolocapi.model"
+    configOptions = [
+		dateLibrary: "java8",
+		useJakartaEe: "true",
+		useSpringBoot3: "true",
+		useSpringController: "true",
+		delegatePattern: "true",
+		interfaceOnly: "false",
+		useSwaggerUI: "true",
+		unhandledException: "true"
+    ]
+}
+
+compileJava.dependsOn tasks.openApiGenerate
+
+sourceSets {
+    main {
+        java {
+            srcDir(files("$rootDir/src/main/java"))
+            srcDir(files("$buildDir/generated/src/main/java"))
+        }
+    }
+}
+
+jacoco {
+    toolVersion = "0.8.9"
+    reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
+}
+
+jacocoTestCoverageVerification {
+    afterEvaluate {
+        afterEvaluate {
+            classDirectories.from = files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: [
+					'com/pnc/assessment/geolocapi/RFC3339DateFormat.class',
+					'com/pnc/assessment/geolocapi/config/**',
+					'com/pnc/assessment/geolocapi/model/**'
+                ])
+            })
+        }
+    }
+
+    violationRules {
+        rule {
+            limit {
+                minimum = 0.5
+            }
+            excludes = [
+				'com.pnc.assessment.geolocapi.RFC3339DateFormat.class',
+				'com.pnc.assessment.geolocapi.config.*',
+				'com.pnc.assessment.geolocapi.model.*'
+            ]
+        }
+    }
+}
+
+check.dependsOn jacocoTestCoverageVerification
+
+jacocoTestReport {
+    afterEvaluate {
+        classDirectories.from = files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+				'com/pnc/assessment/geolocapi/RFC3339DateFormat.class',
+				'com/pnc/assessment/geolocapi/config/**',
+				'com/pnc/assessment/geolocapi/model/**'
+            ])
+        })
+    }
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+}
+
+test {
+    useJUnitPlatform()
+	finalizedBy jacocoTestReport 
+}

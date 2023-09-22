@@ -1,0 +1,86 @@
+openapi: "3.0.3"
+
+info:
+  title: Geoloc API
+  version: "1.0.0"
+
+paths:
+  /login:
+    post:
+      summary: Try to login
+      operationId: login
+      requestBody:
+        $ref: "#/components/requestBodies/payload"
+      responses:
+        200:
+          $ref: "#/components/responses/ok"
+        400:
+          $ref: "#/components/responses/badrequest"
+        403:
+          $ref: "#/components/responses/forbidden"
+
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          nullable: false
+        password:
+          type: string
+          format: password
+          pattern: '^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[_#$%.]).{8,}$'
+          nullable: false
+        ipAddress:
+          type: string
+          format: ipv4
+          pattern: '^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+          nullable: false
+      required:
+        - username
+        - password
+        - ipAddress
+
+    LoginResponse:
+      type: object
+      properties:
+        uuid:
+          type: string
+        message:
+          type: string
+
+    GeneralError:
+      type: object
+      properties:
+        message:
+          type: string
+
+  requestBodies:
+    payload:
+      required: true
+      description: Payload for login attempt
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/LoginRequest"
+
+  responses:
+    ok:
+      description: Logged-in
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/LoginResponse"
+    badrequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/GeneralError"
+    forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/GeneralError"
