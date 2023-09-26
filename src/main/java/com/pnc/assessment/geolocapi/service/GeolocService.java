@@ -13,7 +13,6 @@ import com.pnc.assessment.geolocapi.model.Geoloc;
 public class GeolocService {
 
     private WebClient webClient;
-    //private final List<String> VALID_COUNTRY_CODE_LIST = Arrays.asList("CA");
     private List<String> geolocCountryWhiteList;
 
     public GeolocService(WebClient geolocWebClient, @Value("${geoloc.country.whitelist}") List<String> geolocCountryWhiteList) {
