@@ -34,7 +34,7 @@ public class HandlerTest {
         Handler handler = new Handler();
 
         MethodArgumentNotValidException exception = Mockito.mock(MethodArgumentNotValidException.class);
-        BindingResult bindingResult = Mockito.mock(MethodArgumentNotValidException.class);
+        BindingResult bindingResult = Mockito.mock(BindingResult.class);
         FieldError fieldError = Mockito.mock(FieldError.class);
         Mockito.doReturn(bindingResult).when(exception).getBindingResult();
         Mockito.doReturn(Arrays.asList(fieldError)).when(bindingResult).getFieldErrors();
