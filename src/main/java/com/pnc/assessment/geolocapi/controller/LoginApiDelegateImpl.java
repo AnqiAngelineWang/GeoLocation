@@ -17,6 +17,7 @@ public class LoginApiDelegateImpl implements LoginApiDelegate {
     private GeolocService geolocService;
 
     public LoginApiDelegateImpl(GeolocService geolocService) {
+
         this.geolocService = geolocService;
     }
     
